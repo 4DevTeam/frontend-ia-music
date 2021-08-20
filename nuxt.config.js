@@ -55,7 +55,16 @@ export default {
   ** Axios module configuration
   ** See https://axios.nuxtjs.org/options
   */
-  axios: {
+  pwa: {
+    icon: {
+      source: 'static/icon.png'
+    },
+    manifest: {
+      name: 'PARAMQ',
+      lang: 'es',
+      theme_color: '#ffc845',
+      useWebmanifestExtension: false
+    }
   },
   env: {
     baseUrl: process.env.BASE_URL || 'http://localhost:8000/api'
