@@ -13,17 +13,20 @@ $base-color: #2e323a;
 //$base-color-light: rgba(24,28,33,0.06);
 $base-color-light: #f1f2f2;
 
+$brand: #f30a73;
+$brand-light: #eb6ea6;
+
 /* General overrides */
-$primary: $cyan;
+$primary: $brand;
 $body-background-color: $white;
-$link: $blue;
+$link: $brand;
 $link-visited: $purple;
 $light-border: 1px solid $base-color-light;
 $hr-height: 1px;
 $border: $base-color-light;
 
 /* NavBar: Bulma override */
-$navbar-item-color: $link;
+$navbar-item-color: $primary;
 $navbar-item-hover-background-color: transparent;
 $navbar-item-active-color: $black-ter;
 $navbar-item-active-background-color: transparent;
@@ -168,7 +171,7 @@ $dark-mode-border-color: $white-ter;
 $dark-mode-border: 1px solid $dark-mode-border-color;
 $dark-mode-light-border-color: $grey-darker;
 $dark-mode-light-border: 1px solid $dark-mode-light-border-color;
-$dark-mode-link-color: $cyan;
+$dark-mode-link-color: $brand-light;
 $dark-mode-link-active-color: $white-ter;
 $dark-mode-link-hover-color: $white-bis;
 $dark-mode-overlay-background-color: rgba($black, .85);
