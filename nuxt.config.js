@@ -5,11 +5,11 @@ export default {
   ** Headers of the page
   */
   head: {
-    title: process.env.npm_package_name || '',
+    title: 'PARAMQ - PAGOS',
     meta: [
       { charset: 'utf-8' },
       { name: 'viewport', content: 'width=device-width, initial-scale=1' },
-      { hid: 'description', name: 'description', content: process.env.npm_package_description || '' }
+      { hid: 'description', name: 'description', content: 'Sistema de pagos' }
     ],
     link: [
       { rel: 'icon', type: 'image/x-icon', href: '/favicon.ico' },
@@ -56,6 +56,12 @@ export default {
   ** See https://axios.nuxtjs.org/options
   */
   axios: {
+  },
+  env: {
+    baseUrl: process.env.BASE_URL || 'http://localhost:8000/api'
+  },
+  server: {
+    host: process.env.HOST || 'localhost'
   },
   /*
   ** Build configuration
