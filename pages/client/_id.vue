@@ -1,193 +1,229 @@
 <template>
   <div>
-    <title-bar :title-stack="titleStack" />
-    <hero-bar>
-      {{ heroTitle }}
-      <nuxt-link slot="right" :to="heroRouterLinkTo" class="button">
-        {{ heroRouterLinkLabel }}
-      </nuxt-link>
-    </hero-bar>
-    <section class="section is-main-section">
-      <notification class="is-info">
-        <div>
-          <span><b>Demo only.</b> No data will be saved/updated</span>
+    <ClientModal
+      :is-active="isClientModalActive"
+      :active-client="activeClient"
+      @refresh="getData()"
+      @close="isClientModalActive = false"
+    />
+    <section class="container m-3">
+      <div class="card">
+        <div class="card-content">
+          <div class="title">
+            Cliente #{{ form.number }}
+          </div>
+          <client-card :item="form" @edit="createOrEditClient" />
+          <div class="content">
+            <client-details :client="form" />
+          </div>
+          <hr>
+          <div class="content">
+            <base-table
+              v-if="form.id"
+              list-text="Familiares"
+              sticky-header
+              narrowed
+              striped
+              view-mode="table"
+              :actions-enabled="['update']"
+              :total="form.family.length"
+              :list-query="{}"
+              :data="form.family"
+            >
+              <b-table-column
+                v-slot="props"
+                field="id"
+                cell-class="has-no-head-mobile is-image-cell"
+              >
+                <figure class="image is-32x32">
+                  <img
+                    :src="
+                      `https:\/\/avatars.dicebear.com\/v2\/initials\/${props.row.first_name}-${props.row.last_name}.svg`
+                    "
+                    class="is-rounded"
+                  >
+                </figure>
+              </b-table-column>
+              <b-table-column
+                v-slot="props"
+                sortable
+                field="name"
+                label="Nombre"
+              >
+                {{ props.row.first_name }}
+              </b-table-column>
+              <b-table-column
+                v-slot="props"
+                sortable
+                field="last_name"
+                label="Apellido"
+              >
+                {{ props.row.last_name }}
+              </b-table-column>
+              <b-table-column
+                v-slot="props"
+                sortable
+                field="relationship"
+                label="Parentezco"
+              >
+                {{ props.row.relationship }}
+              </b-table-column>
+              <b-table-column
+                v-slot="props"
+                sortable
+                field="birthday"
+                label="Cumpleaños"
+              >
+                {{ props.row.birthday | birthdate }}
+              </b-table-column>
+              <b-table-column custom-key="actions" centered label="Acciones">
+                <b-icon icon="dots-vertical" />
+              </b-table-column>
+            </base-table>
+          </div>
         </div>
-      </notification>
-      <tiles>
-        <card-component :title="formCardTitle" icon="account-edit" class="tile is-child">
-          <form @submit.prevent="submit">
-            <b-field label="ID" horizontal>
-              <b-input v-model="form.id" custom-class="is-static" readonly />
-            </b-field>
-            <hr>
-            <b-field label="Avatar" horizontal>
-              <file-picker />
-            </b-field>
-            <hr>
-            <b-field label="Name" message="Client name" horizontal>
-              <b-input v-model="form.name" placeholder="e.g. John Doe" required />
-            </b-field>
-            <b-field label="Company" message="Client's company name" horizontal>
-              <b-input v-model="form.company" placeholder="e.g. Berton & Steinway" required />
-            </b-field>
-            <b-field label="City" message="Client's city" horizontal>
-              <b-input v-model="form.city" placeholder="e.g. Geoffreyton" required />
-            </b-field>
-            <b-field label="Created" horizontal>
-              <b-datepicker
-                v-model="form.created_date"
-                placeholder="Click to select..."
-                icon="calendar-today"
-                @input="input"
-              />
-            </b-field>
-            <hr>
-            <b-field label="Progress" horizontal>
-              <b-slider v-model="form.progress" />
-            </b-field>
-            <hr>
-            <b-field horizontal>
-              <b-button type="is-primary" :loading="isLoading" native-type="submit">
-                Submit
-              </b-button>
-            </b-field>
-          </form>
-        </card-component>
-        <card-component v-if="isProfileExists" title="Client Profile" icon="account" class="tile is-child">
-          <user-avatar :avatar="form.avatar" class="image has-max-width is-aligned-center" />
-          <hr>
-          <b-field label="Name">
-            <b-input :value="form.name" custom-class="is-static" readonly />
-          </b-field>
-          <b-field label="Company">
-            <b-input :value="form.company" custom-class="is-static" readonly />
-          </b-field>
-          <b-field label="City">
-            <b-input :value="form.city" custom-class="is-static" readonly />
-          </b-field>
-          <b-field label="Created">
-            <b-input :value="createdReadable" custom-class="is-static" readonly />
-          </b-field>
-          <hr>
-          <b-field label="Progress">
-            <progress class="progress is-small is-primary" :value="form.progress" max="100">
-              {{ form.progress }}
-            </progress>
-          </b-field>
-        </card-component>
-      </tiles>
+      </div>
     </section>
   </div>
 </template>
 
 <script>
-import axios from 'axios'
 import dayjs from 'dayjs'
-import find from 'lodash/find'
-import TitleBar from '@/components/TitleBar'
-import HeroBar from '@/components/HeroBar'
-import Tiles from '@/components/Tiles'
-import CardComponent from '@/components/CardComponent'
-import FilePicker from '@/components/FilePicker'
-import UserAvatar from '@/components/UserAvatar'
-import Notification from '@/components/Notification'
-
 export default {
-  name: 'ClientForm',
-  components: { UserAvatar, FilePicker, CardComponent, Tiles, HeroBar, TitleBar, Notification },
+  name: 'ClientDetail',
+  async fetch () {
+    await this.getData()
+    this.$store.commit('setTitleStack', ['Clientes', 'Detalle'])
+  },
   data () {
     return {
       id: null,
+      isClientModalActive: false,
       isLoading: false,
       form: this.getClearFormObject(),
       createdReadable: null,
-      isProfileExists: false
+      isEdit: false,
+      activeStep: 0,
+      activeClient: {
+        person: {},
+        family: [{}]
+      }
     }
   },
   computed: {
+    getFullName () {
+      return `${this.form.nombre_persona} ${this.form.apellido_persona}`
+    },
     titleStack () {
       let lastCrumb
 
-      if (this.isProfileExists) {
-        lastCrumb = this.form.name
+      if (this.isEdit) {
+        lastCrumb = this.getFullName
       } else {
-        lastCrumb = 'New client'
+        lastCrumb = 'Nuevo cliente'
       }
 
-      return [
-        'Admin',
-        'Clients',
-        lastCrumb
-      ]
+      return ['Admin', 'Clientes', lastCrumb]
     },
     heroTitle () {
-      if (this.isProfileExists) {
-        return this.form.name
+      if (this.isEdit) {
+        return this.getFullName
       } else {
-        return 'Create Client'
+        return 'Crear Cliente'
       }
     },
     heroRouterLinkTo () {
-      if (this.isProfileExists) {
+      if (this.isEdit) {
         return '/client'
       } else {
         return '/'
       }
     },
     heroRouterLinkLabel () {
-      if (this.isProfileExists) {
-        return 'New client'
+      if (this.isEdit) {
+        return 'Nuevo cliente'
       } else {
         return 'Dashboard'
       }
     },
     formCardTitle () {
-      if (this.isProfileExists) {
-        return 'Edit Client'
+      if (this.isEdit) {
+        return 'Editar Cliente'
       } else {
-        return 'New Client'
+        return 'Nuevo Cliente'
       }
     }
   },
-  created () {
-    this.getData()
-  },
   methods: {
-    getClearFormObject () {
-      return {
-        name: null,
-        company: null,
-        city: null,
-        created_date: new Date(),
-        created_mm_dd_yyyy: null,
-        progress: 0
+    nextStep () {
+      this.activeStep = this.activeStep + 1
+    },
+    previousStep () {
+      this.activeStep -= this.activeStep
+    },
+    createOrEditClient (item) {
+      if (item) {
+        this.activeClient = item
+      } else {
+        this.activeClient = {
+          person: {},
+          family: [{}]
+        }
+      }
+      this.isClientModalActive = true
+    },
+    async saveForm (form) {
+      try {
+        console.log(form)
+        this.$store.commit('buttonLoadingToggle')
+        await this.$store.dispatch('modules/clients/createOrUpdate', form)
+        this.$buefy.snackbar.open({
+          message: 'Cliente guardado',
+          type: 'is-success',
+          queue: false
+        })
+        this.$router.push('/clients')
+      } catch (error) {
+        console.log(error)
+      } finally {
+        this.$store.commit('buttonLoadingToggle')
       }
     },
-    getData () {
+    cancelForm () {
+      console.log(this.activeStep)
+    },
+    async getData () {
       if (this.$route.params.id) {
-        axios
-          .get('/data-sources/clients.json')
-          .then((r) => {
-            const item = find(r.data.data, item => item.id === parseInt(this.$route.params.id))
+        this.$store.commit('loadingToggle')
+        try {
+          const res = await this.$store.dispatch(
+            'modules/clients/getDetailsById',
+            this.$route.params.id
+          )
+          console.log(res)
 
-            if (item) {
-              this.isProfileExists = true
-              this.form = item
-              this.form.created_date = new Date(item.created_mm_dd_yyyy)
-              this.createdReadable = dayjs(new Date(item.created_mm_dd_yyyy)).format('MMM D, YYYY')
-            } else {
-              this.$router.push({ name: 'client.new' })
-            }
+          if (res) {
+            this.isEdit = true
+            this.form = res
+          } else {
+            this.$router.push({ name: 'clients' })
+          }
+        } catch (e) {
+          console.log(e)
+          this.$buefy.toast.open({
+            message: `Error: ${e.message}`,
+            type: 'is-danger',
+            queue: false
           })
-          .catch((e) => {
-            this.$buefy.toast.open({
-              message: `Error: ${e.message}`,
-              type: 'is-danger',
-              queue: false
-            })
-          })
+        } finally {
+          this.$store.commit('loadingToggle')
+        }
       }
     },
+    getClearFormObject () {
+      return {}
+    },
+
     input (v) {
       this.createdReadable = dayjs(v).format('MMM D, YYYY')
     },
@@ -206,7 +242,7 @@ export default {
   },
   head () {
     return {
-      title: 'Client — Admin Null Nuxt.js Bulma'
+      title: 'Client — go-agent'
     }
   }
 }
