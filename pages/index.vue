@@ -1,228 +1,202 @@
 <template>
   <div>
-    <title-bar :title-stack="titleStack" />
-    <hero-bar-main />
-    <section class="section is-main-section">
-      <tiles>
-        <card-widget
-          class="tile is-child"
-          type="is-primary"
-          icon="account-multiple"
-          :number="512"
-          :previous-number="384"
-          previous-period="July, 2019"
-          label="Clients"
-        />
-        <card-widget
-          class="tile is-child"
-          type="is-info"
-          icon="cart-outline"
-          :number="7770"
-          :previous-number="7000"
-          previous-period="July, 2019"
-          prefix="$"
-          label="Sales"
-        />
-        <card-widget
-          class="tile is-child"
-          type="is-success"
-          icon="chart-timeline-variant"
-          :number="256"
-          :previous-number="384"
-          previous-period="July, 2019"
-          suffix="%"
-          label="Performance"
-        />
-        <card-widget
-          class="tile is-child"
-          type="is-danger"
-          icon="bell"
-          :number="32"
-          :previous-number="64"
-          label="Alerts"
-          previous-period="July, 2019"
-        />
-      </tiles>
-
-      <card-component title="Performance" icon="finance" header-icon="reload" @header-icon-click="fillChartData">
-        <div v-if="defaultChart.chartData" class="chart-area">
-          <line-chart
-            ref="bigChart"
-            style="height: 100%"
-            chart-id="big-line-chart"
-            :chart-data="defaultChart.chartData"
-            :extra-options="defaultChart.extraOptions"
-          />
-        </div>
-      </card-component>
-
-      <div class="columns is-desktop">
-        <div class="column">
-          <card-scrollable data-url="/data-sources/comments.json" title="Recent Comments" icon="comment-multiple-outline" :has-share-buttons="true" />
-        </div>
-        <div class="column">
-          <card-scrollable data-url="/data-sources/stuff-updates.json" title="Updates" icon="animation-outline" :has-dismiss="true" />
-        </div>
-      </div>
-
-      <card-component title="Clients" icon="account-multiple" class="has-table has-mobile-sort-spaced" :has-button-slot="true">
-        <refresh-button slot="button" />
-        <card-toolbar slot="toolbar" class="is-upper">
-          <div slot="left" class="buttons has-addons">
-            <button class="button is-active" @click="actionSample">
-              Active
-            </button>
-            <button class="button" disabled>
-              Recent
-            </button>
-            <button class="button" disabled>
-              Archived
-            </button>
-          </div>
-          <form slot="right" @submit.prevent="actionSample">
-            <div class="field has-addons">
-              <div class="control">
-                <input class="input" type="text" placeholder="Sample field...">
-              </div>
-              <div class="control">
-                <button type="submit" class="button is-primary">
-                  <b-icon icon="dots-horizontal" custom-size="default" />
-                </button>
-              </div>
-            </div>
-          </form>
-        </card-toolbar>
-        <clients-table-sample data-url="/data-sources/clients.json" />
-      </card-component>
-    </section>
   </div>
 </template>
 
+<style>
+.name:hover {
+  cursor: pointer;
+}
+tr.is-success {
+  background: #28a745;
+}
+tr.is-info {
+  background: #000408;
+}
+tr.is-danger {
+  background: #f02516;
+}
+tr.is-warning {
+  background: #fca503;
+}
+</style>
+
 <script>
-// @ is an alias to /src
-import * as chartConfig from '@/components/Charts/chart.config'
-import TitleBar from '@/components/TitleBar'
-import Tiles from '@/components/Tiles'
-import CardWidget from '@/components/CardWidget'
-import CardComponent from '@/components/CardComponent'
-import LineChart from '@/components/Charts/LineChart'
-import ClientsTableSample from '@/components/ClientsTableSample'
-import HeroBarMain from '@/components/HeroBarMain'
-import CardToolbar from '@/components/CardToolbar'
-import CardScrollable from '@/components/CardScrollable'
-import RefreshButton from '@/components/RefreshButton'
+import tableMixin from '@/mixins/table'
+
 export default {
   name: 'Home',
-  components: {
-    RefreshButton,
-    CardScrollable,
-    CardToolbar,
-    HeroBarMain,
-    ClientsTableSample,
-    LineChart,
-    CardComponent,
-    CardWidget,
-    Tiles,
-    TitleBar
+  mixins: [tableMixin],
+  fetch () {
+    this.$store.commit('setTitleStack', ['Inicio'])
   },
   data () {
     return {
-      defaultChart: {
-        chartData: null,
-        extraOptions: chartConfig.chartOptionsMain
-      }
+      action: '',
+      status: {
+        Familiar: 'is-info',
+        Basic: 'is-danger',
+        Premium: 'is-warning'
+      },
+      listQuery: {
+        page: 1,
+        limit: 10,
+        offset: 0
+      },
+      activePolicy: {
+        product: {},
+        insurance: {},
+        client: {
+          person: {}
+        },
+        employee: {
+          person: {}
+        },
+        properties: [{}]
+      },
+      selectedPolicies: [],
+      checkPayments: [],
+      valuePayments: [],
+      paymentIndex: 0,
+      payLoading: false,
+      failedPayments: 0
     }
   },
   computed: {
+    getList () {
+      const l = this.list.filter(
+        el =>
+          this.firstPaymentValidation(el) !== el &&
+          this.firstPaymentValidation(el) === el.payments[0]
+      )
+      return l
+    },
     titleStack () {
-      return [
-        'Admin',
-        'Dashboard'
-      ]
+      return ['Admin', 'Dashboard']
     }
   },
-  mounted () {
-    this.fillChartData()
-
-    this.$buefy.snackbar.open({
-      message: 'Welcome back',
-      queue: false
-    })
+  async created () {
   },
   methods: {
-    randomChartData (n) {
-      const data = []
-
-      for (let i = 0; i < n; i++) {
-        data.push(Math.round(Math.random() * 200))
+    getDataRefresh (refresh) {
+      this.checkRows = []
+      this.paymentIndex = 0
+      this.valuePayments = []
+      this.selectedPolicies = []
+      if (!refresh) {
+        this.getData()
       }
-
-      return data
     },
-    fillChartData () {
-      this.defaultChart.chartData = {
-        datasets: [
-          {
-            fill: false,
-            borderColor: chartConfig.chartColors.default.primary,
-            borderWidth: 2,
-            borderDash: [],
-            borderDashOffset: 0.0,
-            pointBackgroundColor: chartConfig.chartColors.default.primary,
-            pointBorderColor: 'rgba(255,255,255,0)',
-            pointHoverBackgroundColor: chartConfig.chartColors.default.primary,
-            pointBorderWidth: 20,
-            pointHoverRadius: 4,
-            pointHoverBorderWidth: 15,
-            pointRadius: 4,
-            data: this.randomChartData(9)
-          },
-          {
-            fill: false,
-            borderColor: chartConfig.chartColors.default.info,
-            borderWidth: 2,
-            borderDash: [],
-            borderDashOffset: 0.0,
-            pointBackgroundColor: chartConfig.chartColors.default.info,
-            pointBorderColor: 'rgba(255,255,255,0)',
-            pointHoverBackgroundColor: chartConfig.chartColors.default.info,
-            pointBorderWidth: 20,
-            pointHoverRadius: 4,
-            pointHoverBorderWidth: 15,
-            pointRadius: 4,
-            data: this.randomChartData(9)
-          },
-          {
-            fill: false,
-            borderColor: chartConfig.chartColors.default.danger,
-            borderWidth: 2,
-            borderDash: [],
-            borderDashOffset: 0.0,
-            pointBackgroundColor: chartConfig.chartColors.default.danger,
-            pointBorderColor: 'rgba(255,255,255,0)',
-            pointHoverBackgroundColor: chartConfig.chartColors.default.danger,
-            pointBorderWidth: 20,
-            pointHoverRadius: 4,
-            pointHoverBorderWidth: 15,
-            pointRadius: 4,
-            data: this.randomChartData(9)
-          }
-        ],
-        labels: ['01', '02', '03', '04', '05', '06', '07', '08', '09']
+    firstPaymentValidation (item) {
+      const payments = item.payments.filter(
+        el =>
+          ['danger', 'warning', 'orange'].includes(el.status) &&
+          !el.payed &&
+          !el.cancelled
+      )
+      if (payments.length) {
+        return payments[0]
+      } else {
+        return item
       }
+    },
+    CheckRows (rows) {
+      this.selectedPolicies = rows
+    },
+    checkPayment (row) {
+      if (row.value) {
+        this.checkPayments[this.paymentIndex] = row
+        this.paymentIndex++
+      } else {
+        this.paymentIndex--
+        this.checkPayments[this.paymentIndex] = null
+      }
+      console.log(this.checkPayments)
+    },
+    payPolicies () {
+      const payments = []
+      for (const i in this.selectedPolicies) {
+        payments[i] = this.selectedPolicies[i].payments[0]
+      }
+      this.payPayments(payments)
+      console.log(payments)
+    },
+    payPayments (items) {
+      let payments = []
+      let n = 0
+      if (items) {
+        payments = items
+        n = payments.length
+      } else {
+        payments = this.checkPayments.filter(
+          el => !null && !el.payed && !el.cancelled
+        )
+        n = this.paymentIndex
+      }
+      for (const index in payments) {
+        payments[index] = payments[index].id
+      }
+      this.$buefy.dialog.confirm({
+        title: 'Marcar como pagados',
+        message:
+          'Estás a punto de marcar como pagados ' +
+          n +
+          ' recibos ¿Deseas continuar?',
+        cancelText: 'Cancelar',
+        confirmText: 'Marcar como pagados',
+        type: 'is-success',
+        hasIcon: true,
+        onConfirm: async () => {
+          if (payments.length > 0) {
+            try {
+              await this.$store.dispatch(
+                'modules/pagos/markAsPayedPayments',
+                payments
+              )
+              this.getDataRefresh()
+              this.$buefy.snackbar.open({
+                message: 'Recibos actualizados',
+                queue: false
+              })
+            } catch (error) {
+              this.$buefy.snackbar.open({
+                message:
+                  'No se puede Guardar en este momento, por favor intente más tarde',
+                type: 'is-danger',
+                queue: false
+              })
+            }
+          } else {
+            this.getDataRefresh()
+          }
+        }
+      })
     },
     actionSample () {
       this.$buefy.toast.open({
-        message: 'Some action',
+        message: 'Espere un momento...',
         type: 'is-info',
         queue: false
       })
+    },
+    newOrEditPolicy (item) {
+      if (item) {
+        this.$router.push('/policy/edit/' + item.id + '/')
+      } else {
+        this.$router.push('/policy/edit/')
+      }
     }
   },
   head () {
     return {
-      title: 'Dashboard — PARAMQ'
+      title: 'Panel de control — go-agent'
     }
   }
 }
 </script>
+
+<style scoped>
+.has-text-orange {
+  color: orange;
+}
+</style>

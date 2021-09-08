@@ -1,21 +1,29 @@
 <template>
-  <b-modal :active.sync="isModalActive" has-modal-card>
+  <b-modal
+    :active.sync="isModalActive"
+    :full-screen="isFullpage"
+    has-modal-card
+  >
     <div class="modal-card">
       <header class="modal-card-head">
         <p class="modal-card-title">
-          Confirm action
+          <b> {{ title }}</b>
         </p>
       </header>
       <section class="modal-card-body">
-        <p>This will permanently delete <b>{{ trashObjectName }}</b></p>
-        <p>Action can not be undone.</p>
+        <slot>
+          <p>
+            Se borrar permanentemente el registro <b>{{ trashObjectName }}</b>
+          </p>
+          <p>Esta acción es irreversible.</p>
+        </slot>
       </section>
       <footer class="modal-card-foot">
         <button class="button" type="button" @click="cancel">
-          Cancel
+          Cancelar
         </button>
         <button class="button is-danger" @click="confirm">
-          Delete
+          Eliminar
         </button>
       </footer>
     </div>
@@ -26,6 +34,14 @@
 export default {
   name: 'ModalBox',
   props: {
+    title: {
+      type: String,
+      default: 'Confirmación de acción'
+    },
+    isFullpage: {
+      type: Boolean,
+      default: false
+    },
     isActive: {
       type: Boolean,
       default: false

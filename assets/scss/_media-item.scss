@@ -1,5 +1,9 @@
 .media {
   .media-content {
+    .media-content-line {
+      margin-top: 0;
+      margin-bottom: 0;
+    }
     .media-meta {
       margin-bottom: $default-padding * .25;
       strong, small {

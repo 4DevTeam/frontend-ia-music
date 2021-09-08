@@ -1,10 +1,19 @@
 import each from 'lodash/each'
+import { removeValue, setValue } from '~/utils/cookies'
+
+export const namespaced = true
 
 export const state = () => ({
+  titleStack: ['go-agent'],
   /* User */
   userName: null,
   userEmail: null,
   userAvatar: null,
+  userFirstName: null,
+  userLastName: null,
+  userFullName: '',
+  userID: null,
+  user: null,
 
   /* NavBar */
   isNavBarVisible: true,
@@ -25,6 +34,10 @@ export const state = () => ({
   /* Overlay */
   isOverlayVisible: false,
 
+  /* Loading */
+  isLoading: false,
+  buttonLoading: false,
+
   /* Dark mode */
   isDarkModeActive: false
 })
@@ -37,11 +50,24 @@ export const mutations = {
 
   /* User */
   user (state, payload) {
+    state.user = payload
+    if (payload.id) {
+      state.userID = payload.id
+    }
     if (payload.name) {
       state.userName = payload.name
     }
     if (payload.email) {
       state.userEmail = payload.email
+    }
+    if (payload.first_name) {
+      state.userFirstName = payload.first_name
+    }
+    if (payload.last_name) {
+      state.userLastName = payload.last_name
+    }
+    if (state.userFirstName && state.userLastName) {
+      state.userFullName = payload.first_name + ' ' + payload.last_name
     }
     if (payload.avatar) {
       state.userAvatar = payload.avatar
@@ -54,7 +80,7 @@ export const mutations = {
     state.isAsideVisible = !payload
     state.isFooterBarVisible = !payload
 
-    each(['has-aside-left', 'has-navbar-fixed-top'], (htmlClass) => {
+    each(['has-aside-left', 'has-navbar-fixed-top'], htmlClass => {
       if (payload) {
         document.documentElement.classList.remove(htmlClass)
       } else {
@@ -107,7 +133,8 @@ export const mutations = {
 
   /* Aside Forced Active Key (when secondary submenu is open) */
   asideActiveForcedKeyToggle (state, payload) {
-    state.asideActiveForcedKey = payload && payload.menuSecondaryKey ? payload.menuSecondaryKey : null
+    state.asideActiveForcedKey =
+      payload && payload.menuSecondaryKey ? payload.menuSecondaryKey : null
   },
 
   /* Aside Right */
@@ -141,6 +168,23 @@ export const mutations = {
     state.isOverlayVisible = !!payload
   },
 
+  /* Overlay */
+  loadingToggle (state, payload = null) {
+    if (payload === null) {
+      payload = !state.isLoading
+    }
+
+    state.isLoading = !!payload
+  },
+
+  buttonLoadingToggle (state, payload = null) {
+    state.buttonLoading = !state.buttonLoading
+  },
+
+  setTitleStack (state, payload) {
+    state.titleStack = payload
+  },
+
   /* Dark Mode */
   darkModeToggle (state, payload = null) {
     const htmlClassName = 'is-dark-mode-active'
@@ -148,8 +192,11 @@ export const mutations = {
     state.isDarkModeActive = !state.isDarkModeActive
 
     if (state.isDarkModeActive) {
+      setValue('darkModeActive', true)
+
       document.documentElement.classList.add(htmlClassName)
     } else {
+      removeValue('darkModeActive')
       document.documentElement.classList.remove(htmlClassName)
     }
   }

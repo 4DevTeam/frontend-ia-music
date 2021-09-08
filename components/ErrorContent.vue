@@ -4,12 +4,12 @@
       <b-icon icon="power-plug" custom-size="default" />
     </div>
     <div class="error-page-caption">
-      <h1>Sample error</h1>
+      <h1>página no encontrada</h1>
     </div>
     <div class="error-page-action">
       <div class="buttons is-centered">
         <button type="button" class="button is-black" @click="emitGoBack">
-          Go Back
+          Regresar
         </button>
         <slot name="buttons" />
       </div>
