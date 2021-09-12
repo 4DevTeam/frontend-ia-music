@@ -59,7 +59,7 @@ export default {
   },
   head () {
     return {
-      title: 'Password Recovery — go-agent'
+      title: 'Password Recovery — ParamQ'
     }
   }
 }

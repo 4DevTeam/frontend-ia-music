@@ -242,7 +242,7 @@ export default {
   },
   head () {
     return {
-      title: 'Client — go-agent'
+      title: 'Client — ParamQ'
     }
   }
 }

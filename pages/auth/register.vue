@@ -5,7 +5,7 @@
         <div class="box">
           <div class="columns mt-1">
             <div class="column left has-text-centered is-hidden-mobile">
-              <h1 class="title is-3">ParamQ go-agent</h1>
+              <h1 class="title is-3">ParamQ ParamQ</h1>
               <h2 class="subtitle colored is-5">
                 Gestión para aseguradoras.
               </h2>
@@ -185,7 +185,7 @@ export default {
   },
   head () {
     return {
-      title: 'Login — go-agent'
+      title: 'Login — ParamQ'
     }
   }
 }

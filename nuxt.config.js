@@ -3,7 +3,7 @@ export default {
    ** Headers of the page
    */
   head: {
-    title: 'PARAMQ - go-agent',
+    title: 'PARAMQ - admin',
     meta: [
       { charset: 'utf-8' },
       { name: 'viewport', content: 'width=device-width, initial-scale=1' },
@@ -106,10 +106,10 @@ export default {
   },
   pwa: {
     icon: {
-      source: 'static/favicon.png'
+      source: 'static/icon.png'
     },
     manifest: {
-      name: 'go-agent',
+      name: 'ParamQ',
       lang: 'es',
       theme_color: '#ff9503',
       useWebmanifestExtension: false

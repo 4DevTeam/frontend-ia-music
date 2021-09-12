@@ -15,8 +15,8 @@
               <span
                 ><img
                   style="width: 35px; padding-top: 10px;"
-                  src="@/assets/logo_white.png"
-                  alt="go-agent logo"
+                  src="@/assets/logo.png"
+                  alt="ParamQ logo"
               /></span>
             </div>
             <div v-if="isAsideExpanded || isAsideMobileExpanded" class="column is-9"><span>Panel de control</span></div>

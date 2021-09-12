@@ -45,7 +45,7 @@ export default {
   },
   head () {
     return {
-      title: 'Error #1 — go-agent'
+      title: 'Error #1 — ParamQ'
     }
   }
 }

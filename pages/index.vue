@@ -189,7 +189,7 @@ export default {
   },
   head () {
     return {
-      title: 'Panel de control — go-agent'
+      title: 'Panel de control — ParamQ'
     }
   }
 }

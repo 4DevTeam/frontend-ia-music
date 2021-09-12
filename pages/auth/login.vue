@@ -124,7 +124,7 @@ export default {
   },
   head () {
     return {
-      title: 'Login — go-agent'
+      title: 'Login — ParamQ'
     }
   }
 }

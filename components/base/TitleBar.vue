@@ -9,13 +9,13 @@
                 v-if="!isDarkModeActive"
                 style="width: 40px;"
                 src="@/assets/logo.png"
-                alt="go-agent logo"
+                alt="ParamQ logo"
               />
               <img
                 v-else
                 style="width: 40px;"
-                src="@/assets/logo_white.png"
-                alt="go-agent logo"
+                src="@/assets/logo.png"
+                alt="ParamQ logo"
               />
             </li>
             <li v-for="(title, index) in titleStack" :key="index">

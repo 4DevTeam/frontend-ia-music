@@ -22,7 +22,7 @@
               <hr>
               <b-field label="Empresa">
                 <figure class="media-left image is-48x48">
-                  <img v-if="isDarkModeActive" src="~/assets/logo_white.png">
+                  <img v-if="isDarkModeActive" src="~/assets/logo.png">
                   <img v-else src="~/assets/logo.png">
                 </figure>
                 <div class="media-content">
@@ -31,7 +31,7 @@
                       {{ user.license.business_name }}
                     </span>
                     <br />
-                    <small class="has-text-weight-light">go-agent</small>
+                    <small class="has-text-weight-light">ParamQ</small>
                   </div>
                 </div>
               </b-field>
@@ -132,7 +132,7 @@ export default {
   },
   head () {
     return {
-      title: 'Mi cuenta — go-agent'
+      title: 'Mi cuenta — ParamQ'
     }
   }
 }
