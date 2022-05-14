@@ -26,7 +26,7 @@
     </nav>
 
     <section class="main-content columns">
-      <aside class="column is-2 section">
+      <aside class="column is-3 section">
         <p class="menu-label is-hidden-touch">
           General
         </p>
@@ -45,7 +45,7 @@
         </ul>
       </aside>
 
-      <div class="container column is-10">
+      <div class="container column is-9">
         <Nuxt />
       </div>
     </section>
@@ -59,7 +59,7 @@ export default {
     return {
       items: [
         {
-          title: 'Home',
+          title: 'Subir pieza musical',
           icon: 'home',
           to: { name: 'index' }
         },
