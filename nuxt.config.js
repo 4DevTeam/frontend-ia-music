@@ -34,6 +34,10 @@ export default {
   buildModules: [
   ],
 
+  env: {
+    baseUrl: process.env.BASE_URL || 'http://localhost:3300/api'
+  },
+
   // Modules: https://go.nuxtjs.dev/config-modules
   modules: [
     // https://go.nuxtjs.dev/buefy
